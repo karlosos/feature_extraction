@@ -1,9 +1,11 @@
 clear all
 
 A = imread('DB1_102_2.tif');
+A = histeq(A)
 
 treshold = isodataAlgorithm(A);
 binary = imbinarize(A, 'adaptive');
+% binary = imcomplement(binary);
 % binary = im2bw(A, iso);
 thined = bwmorph(binary, 'thin', Inf);
 
@@ -15,7 +17,8 @@ subplot(1,3,2);
 imshow(thined);
 title("thinned")
 
-spured = bwmorph(thined, 'spur');
+spured = bwmorph(thined, 'clean');
+spured = bwmorph(spured, 'spur');
 
 subplot(1,3,3); 
 imshow(spured);
@@ -54,6 +57,6 @@ ends = uniquetol(ends, tol, 'ByRows', true, 'DataScale', 1);
 figure()
 imshow(spured)
 hold on
-scatter(forks(:, 1), forks(:, 2), 'x', 'LineWidth', 2.5)
-scatter(ends(:, 1), ends(:, 2), 'x', 'LineWidth', 2.5)
+scatter(forks(:, 1), forks(:, 2), 'x', 'LineWidth', 2.5);
+scatter(ends(:, 1), ends(:, 2), 'x', 'LineWidth', 2.5);
 hold off
