@@ -43,4 +43,4 @@ title("cleaned")
 subplot(2,3,6); 
 imshow(thined_from_histeq);
 title("cleaned from histeq")
-saveas(fig, 'output/hist_eq_comparison', 'png')
+saveas(fig, 'output/hist_eq_comparison', 'eps')

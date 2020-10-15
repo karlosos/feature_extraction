@@ -37,4 +37,4 @@ subplot(2,3,6);
 imshow(spur);
 title("clean")
 
-saveas(fig, 'output/binarization_steps', 'png')
+saveas(fig, 'output/binarization_steps', 'eps')
