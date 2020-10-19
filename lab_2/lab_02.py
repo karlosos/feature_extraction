@@ -6,6 +6,10 @@ import soundfile as sf
 import matplotlib.pyplot as plt
 import numpy as np
 
+# 440 - 440
+# C3 - 130.81, 263.74
+# C4 - 261.64, 131.87
+
 if __name__ == "__main__":
     signal, fs = sf.read("lab_2/a_C4_ugp44.wav")
 
@@ -13,7 +17,7 @@ if __name__ == "__main__":
     if signal.ndim == 2:
         signal = signal[:, 0]
 
-    signal = signal[:fs//2]
+    signal = signal[5000:6000]
 
     print(signal.shape, fs)
     corr = correlate(signal, signal, mode='full')
@@ -32,3 +36,4 @@ if __name__ == "__main__":
     plt.show()
     f0 = fs/peaks[0]
     print(f0)
+
