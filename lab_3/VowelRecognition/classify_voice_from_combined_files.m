@@ -1,4 +1,4 @@
-
+% Dzialowski Karol
 %% Porz¹dki
 
 clear
@@ -40,3 +40,16 @@ V = {'a', 'e', 'i', 'o', 'u', 'y'};
 
 c_mat = confusionmat(C,labels)
 confusionchart(c_mat)
+
+%% True Recognition Rate
+
+TRR = diag(c_mat)/6
+
+% TRR dla u jest najmniejszy i wynosi tylko 33%
+% TRR dla y wynosi 66%
+% TRR dla reszty samog³osek wynosi 100%, to znaczy ze zawsze by³y prawid³owo
+% klasyfikowane
+
+all_TRR = sum(diag(c_mat))/36
+
+% TRR dla ca³ego systemu wynosi 83%
