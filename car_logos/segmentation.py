@@ -3,8 +3,8 @@ import numpy as np
 import os
 from pathlib import Path
 
-folders = ["01_bmw", "01_chevrolet", "02_kia", "03_mitsubishi", "04_opel",
-           "05_peugeout", "06_skoda", "07_subaru", "07_honda", "08_tesla",
+folders = ["01_bmw", "02_kia", "03_mitsubishi", "04_opel",
+           "05_peugeout", "07_subaru", "07_honda", "08_tesla",
            "09_toyota", "09_renault", "10_volkswagen", "10_volvo"]
 
 for name in folders:
