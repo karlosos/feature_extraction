@@ -1,41 +1,49 @@
 import cv2
 import numpy as np
+import os
 
-# Read image
-im_in = cv2.imread("dataset/01_chevrolet/4.jpg", cv2.IMREAD_GRAYSCALE)
+folders = ["01_bmw", "01_chevrolet", "02_kia", "03_mitsubishi", "04_opel",
+           "05_peugeout", "06_skoda", "07_subaru", "07_honda", "08_tesla",
+           "09_toyota", "09_renault", "10_volkswagen", "10_volvo"]
 
-im_in = cv2.copyMakeBorder(im_in, 20, 20, 20, 20,
-                           cv2.BORDER_CONSTANT, value=[255, 255, 255])
+for name in folders:
+    for i in range(1, 11):
+        filename = "./dataset/" + name + "/" + str(i) + ".jpg"
+        im_in = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
 
-# Threshold.
-# Set values equal to or above 220 to 0.
-# Set values below 220 to 255.
-th, im_th = cv2.threshold(im_in, 220, 255, cv2.THRESH_BINARY_INV)
-im_th = cv2.adaptiveThreshold(
-    im_in, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+        im_in = cv2.copyMakeBorder(im_in, 20, 20, 20, 20,
+                                   cv2.BORDER_CONSTANT, value=[255, 255, 255])
 
-# im_th = cv2.Canny(im_in, 100, 200)
+        # Threshold.
+        # Set values equal to or above 220 to 0.
+        # Set values below 220 to 255.
+        th, im_th = cv2.threshold(im_in, 220, 255, cv2.THRESH_BINARY_INV)
+        im_th = cv2.adaptiveThreshold(
+            im_in, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
-# Copy the thresholded image.
-im_floodfill = im_th.copy()
+        # im_th = cv2.Canny(im_in, 100, 200)
 
-# Mask used to flood filling.
-# Notice the size needs to be 2 pixels than the image.
-h, w = im_th.shape[:2]
-mask = np.zeros((h+2, w+2), np.uint8)
+        # Copy the thresholded image.
+        im_floodfill = im_th.copy()
 
-# Floodfill from point (0, 0)
-cv2.floodFill(im_floodfill, mask, (0, 0), 255)
+        # Mask used to flood filling.
+        # Notice the size needs to be 2 pixels than the image.
+        h, w = im_th.shape[:2]
+        mask = np.zeros((h+2, w+2), np.uint8)
 
-# Invert floodfilled image
-im_floodfill_inv = cv2.bitwise_not(im_floodfill)
+        # Floodfill from point (0, 0)
+        cv2.floodFill(im_floodfill, mask, (0, 0), 255)
 
-# Combine the two images to get the foreground.
-im_out = im_th | im_floodfill_inv
+        # Invert floodfilled image
+        im_floodfill_inv = cv2.bitwise_not(im_floodfill)
 
-# Display images.
-cv2.imshow("Thresholded Image", im_th)
-cv2.imshow("Floodfilled Image", im_floodfill)
-cv2.imshow("Inverted Floodfilled Image", im_floodfill_inv)
-cv2.imshow("Foreground", im_out)
-cv2.waitKey(0)
+        # Combine the two images to get the foreground.
+        im_out = im_th | im_floodfill_inv
+
+        # Display images.
+        # save binarized
+        if not os.path.exists("./dataset/binarized/" + name):
+            os.makedirs("./dataset/binarized/" + name)
+        path_img_target = os.path.join(
+            "./dataset/binarized/" + name + "/" + str(i) + ".png")
+        cv2.imwrite(path_img_target, im_out)
