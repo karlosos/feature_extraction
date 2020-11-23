@@ -1,14 +1,16 @@
 import cv2
 import numpy as np
 import os
+from pathlib import Path
 
 folders = ["01_bmw", "01_chevrolet", "02_kia", "03_mitsubishi", "04_opel",
            "05_peugeout", "06_skoda", "07_subaru", "07_honda", "08_tesla",
            "09_toyota", "09_renault", "10_volkswagen", "10_volvo"]
 
 for name in folders:
-    for i in range(1, 11):
-        filename = "./dataset/" + name + "/" + str(i) + ".jpg"
+    files = os.listdir('./dataset/'+name)
+    for f in files:
+        filename = "./dataset/" + name + "/" + f
         im_in = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
 
         im_in = cv2.copyMakeBorder(im_in, 20, 20, 20, 20,
@@ -39,11 +41,16 @@ for name in folders:
 
         # Combine the two images to get the foreground.
         im_out = im_th | im_floodfill_inv
+        kernel = np.ones((5, 5), np.uint8)
+        im_out = cv2.morphologyEx(im_out, cv2.MORPH_OPEN, kernel)
+        im_out = cv2.morphologyEx(im_out, cv2.MORPH_CLOSE, kernel)
 
         # Display images.
         # save binarized
         if not os.path.exists("./dataset/binarized/" + name):
             os.makedirs("./dataset/binarized/" + name)
         path_img_target = os.path.join(
-            "./dataset/binarized/" + name + "/" + str(i) + ".png")
+            "./dataset/binarized/" + name + "/" + f)
+        path_img_target = str(Path(path_img_target).with_suffix('.png'))
+        print(path_img_target)
         cv2.imwrite(path_img_target, im_out)
