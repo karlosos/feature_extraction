@@ -3,9 +3,9 @@ import numpy as np
 import os
 from pathlib import Path
 
-folders = ["01_bmw", "02_kia", "03_mitsubishi", "04_opel",
-           "05_peugeout", "07_subaru", "07_honda", "08_tesla",
-           "09_toyota", "09_renault", "10_volkswagen", "10_volvo"]
+folders = ["01_bmw", "02_kia", "03_mitsubishi", "04_volvo",
+           "05_peugeout", "06_honda", "07_subaru", "08_tesla",
+           "09_renault", "10_toyota"]
 
 for name in folders:
     files = os.listdir('./dataset/'+name)
@@ -44,6 +44,9 @@ for name in folders:
         kernel = np.ones((5, 5), np.uint8)
         im_out = cv2.morphologyEx(im_out, cv2.MORPH_OPEN, kernel)
         im_out = cv2.morphologyEx(im_out, cv2.MORPH_CLOSE, kernel)
+
+        # invert image
+        im_out = cv2.bitwise_not(im_out)
 
         # Display images.
         # save binarized
