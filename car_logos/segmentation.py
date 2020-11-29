@@ -19,7 +19,7 @@ for name in folders:
         # Threshold.
         # Set values equal to or above 220 to 0.
         # Set values below 220 to 255.
-        th, im_th = cv2.threshold(im_in, 220, 255, cv2.THRESH_BINARY_INV)
+        # th, im_th = cv2.threshold(im_in, 220, 255, cv2.THRESH_BINARY_INV)
         im_th = cv2.adaptiveThreshold(
             im_in, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
