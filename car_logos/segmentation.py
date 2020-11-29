@@ -43,6 +43,7 @@ for name in folders:
         im_out = im_th | im_floodfill_inv
         kernel = np.ones((5, 5), np.uint8)
         im_out = cv2.morphologyEx(im_out, cv2.MORPH_OPEN, kernel)
+        kernel = np.ones((20, 20), np.uint8)
         im_out = cv2.morphologyEx(im_out, cv2.MORPH_CLOSE, kernel)
 
         # invert image
