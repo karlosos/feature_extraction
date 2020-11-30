@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 import pandas as pd
+from scipy.spatial.distance import cdist
 
 folders = ["01_bmw", "02_kia", "03_mitsubishi", "04_volvo",
            "05_peugeout", "06_honda", "07_subaru", "08_tesla",
@@ -24,6 +25,8 @@ def prepare_dataset():
                                                                                         random_state=1337)
         X_train += X_train_folder
         y_train += y_train_folder
+        X_test += X_test_folder
+        y_test += y_test_folder
     return X_train, y_train, X_test, y_test
 
 
@@ -97,9 +100,7 @@ def draw_countours(X_train):
         cv2.destroyAllWindows()  # destroys the window showing image
 
 
-def main():
-    X_train, y_train, X_test, y_test = prepare_dataset()
-
+def template_dictionary(X_train, y_train):
     areas = []
     perimeters = []
     diameters = []
@@ -130,9 +131,41 @@ def main():
             'eccentricity': eccentricities,
             'label': labels}
     df = pd.DataFrame.from_dict(data)
-    print(df)
+    return df
 
-    # draw_countours(X_train)
+
+def calculate_shape_descriptors(x):
+    im = cv2.imread(x, cv2.IMREAD_GRAYSCALE).astype('uint8')
+    contour = object_contour(im)
+    descriptors = [area(contour), perimeter(contour), diameter(contour), solidity(contour), compactness(contour),
+                   roundness(contour), eccentricity(contour)]
+    return descriptors
+
+
+def closest_template(descriptors, template_dict):
+    template_descriptors = template_dict.loc[:, 'area':'eccentricity']
+    distances = cdist([descriptors[3:7]], template_descriptors.iloc[:, 3:7]).mean(axis=0)
+    closest_label = template_dict.iloc[distances.argmin()]['label']
+    return closest_label
+
+
+def main():
+    X_train, y_train, X_test, y_test = prepare_dataset()
+    template_dict = template_dictionary(X_train, y_train)
+
+    y_pred = []
+    for i in range(len(X_test)):
+        x = X_test[i]
+        descriptors = calculate_shape_descriptors(x)
+        y_pred.append(closest_template(descriptors, template_dict))
+    print(y_pred)
+    print(y_test)
+
+    from sklearn.metrics import confusion_matrix
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    print(conf_matrix)
+    # from sklearn.metrics import plot_confusion_matrix
+    # plot_confusion_matrix(mc, X_test, y_test)
 
 
 if __name__ == '__main__':
