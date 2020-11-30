@@ -3,6 +3,7 @@ import numpy as np
 import os
 from pathlib import Path
 from sklearn.model_selection import train_test_split
+import pandas as pd
 
 folders = ["01_bmw", "02_kia", "03_mitsubishi", "04_volvo",
            "05_peugeout", "06_honda", "07_subaru", "08_tesla",
@@ -20,7 +21,7 @@ def prepare_dataset():
         y = [name for _ in range(len(files))]
         X_train_folder, X_test_folder, y_train_folder, y_test_folder = train_test_split(files, y,
                                                                                         test_size=len(files) - 2,
-                                                                                        random_state=42)
+                                                                                        random_state=1337)
         X_train += X_train_folder
         y_train += y_train_folder
     return X_train, y_train, X_test, y_test
@@ -71,19 +72,19 @@ def compactness(contour):
     return compactness
 
 
-def main():
-    X_train, y_train, X_test, y_test = prepare_dataset()
-    im = cv2.imread(X_train[1], cv2.IMREAD_GRAYSCALE).astype('uint8')
+def roundness(contour):
+    p = perimeter(contour)
+    a = area(contour)
+    gamma = p**2 / (4 * np.pi * a)
+    return gamma
 
-    contour = object_contour(im)
-    print(area(contour))
-    print(area2(im))
-    print(perimeter(contour))
-    print(diameter(contour))
-    print(solidity(contour))
-    print(compactness(contour))
 
-    # Rysowanie konturu
+def eccentricity(contour):
+    _, (w, h), _= cv2.minAreaRect(contour)
+    return w/h
+
+
+def draw_countours(X_train):
     for i in range(len(X_train)):
         im = cv2.imread(X_train[i], cv2.IMREAD_GRAYSCALE).astype('uint8')
         ret, thresh = cv2.threshold(im, 127, 255, 0)
@@ -94,6 +95,45 @@ def main():
         cv2.imshow("Image", img)
         cv2.waitKey(0)  # waits until a key is pressed
         cv2.destroyAllWindows()  # destroys the window showing image
+
+
+def main():
+    X_train, y_train, X_test, y_test = prepare_dataset()
+
+    areas = []
+    perimeters = []
+    diameters = []
+    solidities = []
+    compactnesses = []
+    roundnesses = []
+    labels = []
+    eccentricities = []
+
+    for i in range(len(X_train)):
+        im = cv2.imread(X_train[i], cv2.IMREAD_GRAYSCALE).astype('uint8')
+        contour = object_contour(im)
+        areas.append(area(contour))
+        perimeters.append(perimeter(contour))
+        diameters.append(diameter(contour))
+        solidities.append(solidity(contour))
+        compactnesses.append(compactness(contour))
+        roundnesses.append(roundness(contour))
+        eccentricities.append(eccentricity(contour))
+        labels.append(y_train[i])
+
+    data = {'area': areas,
+            'perimeter': perimeters,
+            'diameter': diameters,
+            'solidity': solidities,
+            'compactness': compactnesses,
+            'roundness': roundnesses,
+            'eccentricity': eccentricities,
+            'label': labels}
+    df = pd.DataFrame.from_dict(data)
+    print(df)
+
+    # draw_countours(X_train)
+
 
 if __name__ == '__main__':
     main()
