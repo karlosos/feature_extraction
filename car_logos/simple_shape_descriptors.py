@@ -4,9 +4,18 @@ import os
 from sklearn.model_selection import train_test_split
 import shape_classifier as sc
 
-folders = ["01_bmw", "02_kia", "03_mitsubishi", "04_volvo",
-           "05_peugeout", "06_honda", "07_subaru", "08_tesla",
-           "09_renault", "10_toyota"]
+folders = [
+    "01_bmw",
+    "02_kia",
+    "03_mitsubishi",
+    "04_volvo",
+    "05_peugeout",
+    "06_honda",
+    "07_subaru",
+    "08_tesla",
+    "09_renault",
+    "10_toyota",
+]
 
 
 def prepare_dataset():
@@ -15,12 +24,12 @@ def prepare_dataset():
     X_test = []
     y_test = []
     for name in folders:
-        files = os.listdir('./dataset/binarized/' + name)
+        files = os.listdir("./dataset/binarized/" + name)
         files = [f"./dataset/binarized/{name}/{file}" for file in files]
         y = [name for _ in range(len(files))]
-        X_train_folder, X_test_folder, y_train_folder, y_test_folder = train_test_split(files, y,
-                                                                                        test_size=len(files) - 2,
-                                                                                        random_state=1337)
+        X_train_folder, X_test_folder, y_train_folder, y_test_folder = train_test_split(
+            files, y, test_size=len(files) - 2, random_state=1337
+        )
         X_train += X_train_folder
         y_train += y_train_folder
         X_test += X_test_folder
@@ -38,7 +47,9 @@ def area2(im):
 
 def object_contour(im):
     ret, thresh = cv2.threshold(im, 127, 255, 0)
-    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(
+        thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+    )
     return contours[1]
 
 
@@ -87,9 +98,11 @@ def eccentricity(contour):
 
 def draw_countours(X_train):
     for i in range(len(X_train)):
-        im = cv2.imread(X_train[i], cv2.IMREAD_GRAYSCALE).astype('uint8')
+        im = cv2.imread(X_train[i], cv2.IMREAD_GRAYSCALE).astype("uint8")
         ret, thresh = cv2.threshold(im, 127, 255, 0)
-        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(
+            thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        )
         im = cv2.cvtColor(im, cv2.COLOR_GRAY2RGB)
         img = cv2.drawContours(im, contours, 1, (255, 0, 0), 3)
         print(contours[1])
@@ -117,5 +130,5 @@ def main():
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
