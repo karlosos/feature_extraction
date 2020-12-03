@@ -8,7 +8,7 @@ import simple_shape_descriptors as ssd
 
 
 class ShapeClassifier(BaseEstimator, ClassifierMixin):
-    def __init__(self, limited=False):
+    def __init__(self, limited=None):
         self.classes_ = None
         self.template_dict_ = None
         self.limited = limited
@@ -66,8 +66,8 @@ class ShapeClassifier(BaseEstimator, ClassifierMixin):
 
     def closest_template(self, descriptors):
         template_descriptors = self.template_dict_.loc[:, 'area':'eccentricity']
-        if self.limited:
-            distances = cdist([descriptors[3:7]], template_descriptors.iloc[:, 3:7]).mean(axis=0)
+        if self.limited is not None:
+            distances = cdist([descriptors[self.limited:self.limited+1]], template_descriptors.iloc[:, self.limited:self.limited+1]).mean(axis=0)
         else:
             distances = cdist([descriptors], template_descriptors).mean(axis=0)
         closest_label = self.template_dict_.iloc[distances.argmin()]['label']
