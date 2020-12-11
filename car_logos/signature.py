@@ -1,10 +1,21 @@
 import cv2
 import numpy as np
 from scipy.spatial import distance
-import matplotlib.pyplot as plt
+from sklearn.base import BaseEstimator, ClassifierMixin
+from scipy.spatial.distance import cdist
+import pandas as pd
 
 from simple_shape_descriptors import object_contour
 from simple_shape_descriptors import prepare_dataset
+
+
+def signature_descriptor(im, length):
+    contour = object_contour(im)
+    x, y = center_of_contour(im, contour)
+    dists = calculate_dists(contour, [x, y])
+    downsampled_y, downsampled_x = scale_dists_length(dists, length)
+
+    return downsampled_y, downsampled_x
 
 
 def center_of_contour(image, contour):
@@ -32,72 +43,95 @@ def scale_dists_length(dists, length):
     return downsampled_y, downsampled_x
 
 
-def test():
-    X_train, y_train, X_test, y_test = prepare_dataset()
+class SignatureClassifier(BaseEstimator, ClassifierMixin):
+    def __init__(self, signature_length=200):
+        self.classes_ = None
+        self.template_dict_ = None
+        self.signature_length = signature_length
 
-    im = cv2.imread(X_train[8], cv2.IMREAD_GRAYSCALE).astype("uint8")
-    contour = object_contour(im)
+    def fit(self, X, y):
+        self.classes_ = np.unique(y)
 
-    # plt.imshow(im)
-    # plt.show()
+        signatures = []
+        labels = []
 
-    # Center of contour
-    x, y = center_of_contour(im, contour)
+        for i in range(len(X)):
+            im = cv2.imread(X[i], cv2.IMREAD_GRAYSCALE).astype("uint8")
+            signature, _ = signature_descriptor(im, self.signature_length)
+            signatures.append(signature)
+            labels.append(y[i])
 
-    # Plot image with center
-    cv2.circle(im, (x, y), 7, (255, 255, 255), -1)
-    cv2.imshow("Image", im)
-    cv2.waitKey(0)
+        data = {"signature": signatures, "label": labels}
 
-    # Contours, what are those?
-    # Contour points start with first upper left point
-    # for idx, point in enumerate(contour):
-    #    print(point)
-    #    cv2.circle(im, (point[0, 0], point[0, 1]), 7, (25 * idx, 25 * idx, 25 * idx), -1)
-    #    if idx > 10:
-    #       break
-    # cv2.imshow("Image", im)
-    # cv2.waitKey(0)
+        df = pd.DataFrame.from_dict(data)
+        self.template_dict_ = df
 
-    # Calculate distance to every point
-    dists = calculate_dists(contour, [x, y])
+    def predict(self, X):
+        y_pred = []
+        for i in range(len(X)):
+            x = X[i]
+            im = cv2.imread(x, cv2.IMREAD_GRAYSCALE).astype("uint8")
+            descriptor, _ = signature_descriptor(im, self.signature_length)
+            y_pred.append(self.closest_template(descriptor))
+        return y_pred
 
-    # Plot signature
-    # print(dists)
-    # plt.plot(dists)
-    # plt.show()
-
-    # Interpolate dists vector to fixed length e.g. 200 elements
-    downsampled_y, downsampled_x = scale_dists_length(dists, 200)
-
-    # Plot points
-    plt.plot(dists)
-    plt.scatter(downsampled_x, downsampled_y)
-    plt.show()
-
-    # Downsampled points length
-    print("Downsampled distances lentgh:", downsampled_y.shape)
-    print("Distances lentgh:", dists.shape)
-
-    plt.plot(downsampled_y)
-    plt.show()
+    def closest_template(self, descriptors):
+        template_descriptors = self.template_dict_["signature"].tolist()
+        distances = cdist([descriptors], template_descriptors).mean(axis=0)
+        closest_label = self.template_dict_.iloc[distances.argmin()]["label"]
+        return closest_label
 
 
 def main():
     X_train, y_train, X_test, y_test = prepare_dataset()
-    for idx, X in enumerate(X_train):
-        im = cv2.imread(X, cv2.IMREAD_GRAYSCALE).astype("uint8")
-        contour = object_contour(im)
-        x, y = center_of_contour(im, contour)
-        dists = calculate_dists(contour, [x, y])
-        downsampled_y, downsampled_x = scale_dists_length(dists, 200)
+    clf = SignatureClassifier(signature_length=200)
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
 
-        # Downsampled points length
-        print(idx, X)
-        print("Distances lentgh:", dists.shape)
-        print("Downsampled distances lentgh:", downsampled_y.shape)
+    from sklearn.metrics import accuracy_score
+
+    acc = accuracy_score(y_test, y_pred)
+    print(f"Acc: {acc}")
+
+    from sklearn.metrics import plot_confusion_matrix
+    import matplotlib.pyplot as plt
+    plot_confusion_matrix(clf, X_test, y_test)
+    plt.xticks(rotation=90)
+    plt.show()
+
+
+def mlp():
+    from sklearn.neural_network import MLPClassifier
+
+    # Prepare X_train, X_test
+    X_train_names, y_train, X_test_names, y_test = prepare_dataset()
+    X_train = []
+    X_test = []
+
+    signature_length = 200
+
+    for file_path in X_train_names:
+        im = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE).astype("uint8")
+        signature, _ = signature_descriptor(im, signature_length)
+        X_train.append(signature)
+
+    for file_path in X_test_names:
+        im = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE).astype("uint8")
+        signature, _ = signature_descriptor(im, signature_length)
+        X_test.append(signature)
+
+    # Create MLP
+    clf = MLPClassifier(random_state=1, max_iter=300, hidden_layer_sizes=(100, 50)).fit(X_train, y_train)
+    print("MLP score", clf.score(X_test, y_test))
+
+    # Confusion matrix
+    from sklearn.metrics import plot_confusion_matrix
+    import matplotlib.pyplot as plt
+    plot_confusion_matrix(clf, X_test, y_test)
+    plt.xticks(rotation=90)
+    plt.show()
 
 
 if __name__ == "__main__":
-    test()
     # main()
+    mlp()
