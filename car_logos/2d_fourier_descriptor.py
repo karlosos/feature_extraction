@@ -10,7 +10,7 @@ class FourierClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self, size=5):
         self.classes_ = None
         self.template_dict_ = None
-        self.size = size 
+        self.size = size
 
     def fit(self, X, y):
         self.classes_ = np.unique(y)
@@ -62,7 +62,7 @@ def main():
 
     X_train, y_train, X_test, y_test = prepare_dataset()
 
-    sizes = [5, 20, 30, 50, 80]
+    sizes = [5, 20, 30, 35, 40]
 
     for size in sizes:
         clf = FourierClassifier(size=size)
