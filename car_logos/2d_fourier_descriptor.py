@@ -75,5 +75,30 @@ def main():
         print(f"Size: {size} Acc: {acc}")
 
 
+def experiment_30():
+    from simple_shape_descriptors import prepare_dataset
+
+    X_train, y_train, X_test, y_test = prepare_dataset()
+    size = 30
+
+    clf = FourierClassifier(size=size)
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+
+    from sklearn.metrics import accuracy_score
+
+    acc = accuracy_score(y_test, y_pred)
+    print(f"Size: {size} Acc: {acc}")
+
+    from sklearn.metrics import plot_confusion_matrix
+    import matplotlib.pyplot as plt
+
+    plot_confusion_matrix(clf, X_test, y_test)
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == "__main__":
-    main()
+    # main()
+    experiment_30()
