@@ -1,11 +1,12 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 from simple_shape_descriptors import object_contour, prepare_dataset
 from signature import center_of_contour, calculate_dists
 
 
-def unl(img):
+def unl_roberto(img):
     """
     UNL transformation
 
@@ -46,11 +47,29 @@ def unl(img):
     # return downsampled_y, downsampled_x
     cv2.waitKey()
 
+def unl(img):
+    contour = object_contour(img)
+    # breakpoint()
+    x, y = center_of_contour(img, contour)
+    dists = calculate_dists(contour, [x, y])
+    dists = dists/np.max(dists)  # normalization
+    theta = np.arctan2(contour[:, 0, 1]-y, contour[:, 0, 0]-x)
+    plt.plot(theta, dists)
+    plt.show()
+    print("theta")
+    print(theta)
+    print("dists")
+    print(dists)
+
+
 
 def main():
     X_train, y_train, X_test, y_test = prepare_dataset()
+    name = 3
+    file = f"./dataset/tests/{name}.png"
+    # file = X_train[8]
 
-    img = cv2.imread(X_train[2], cv2.IMREAD_GRAYSCALE).astype("uint8")
+    img = cv2.imread(file, cv2.IMREAD_GRAYSCALE).astype("uint8")
     cv2.imshow("Original image", img)
     unl(img)
 
