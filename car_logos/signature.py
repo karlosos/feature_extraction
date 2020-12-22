@@ -121,7 +121,8 @@ def mlp():
         X_test.append(signature)
 
     # Create MLP
-    clf = MLPClassifier(random_state=1, max_iter=300, hidden_layer_sizes=(100, 50)).fit(X_train, y_train)
+    clf = MLPClassifier(random_state=1, max_iter=300,
+                        hidden_layer_sizes=(100, 50)).fit(X_train, y_train)
     print("MLP score", clf.score(X_test, y_test))
 
     # Confusion matrix
