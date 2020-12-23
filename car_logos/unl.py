@@ -6,72 +6,43 @@ from simple_shape_descriptors import object_contour, prepare_dataset
 from signature import center_of_contour, calculate_dists
 
 
-def unl_roberto(img):
-    """
-    UNL transformation
-
-    Returns 2D image with polar coordinates
-    """
-    # Moje
-    contour = object_contour(img)
-    x, y = center_of_contour(img, contour)
-    # thresh = cv2.Canny(img, 30, 200)
-    polar_image = cv2.linearPolar(img, center=(x, y), maxRadius=np.max(img.shape), flags=cv2.WARP_FILL_OUTLIERS)
-    polar_image = polar_image.astype(np.uint8)
-
-    cv2.imshow("Polar image", polar_image)
-
-    img_fft = np.fft.fft2(polar_image)
-    # spectrum = np.log(1 + np.abs(img_fft))
-    import matplotlib.pyplot as plt
-    zeroed = img_fft.copy()
-    zeroed[10:, 10:] = 0
-    inverse = np.fft.ifft2(zeroed)
-    plt.imshow(np.abs(inverse), "gray")
-    plt.title("Spectrum")
-    plt.show()
-
-    # out = []
-    # for i in range(0, size):
-    #     tmp = []
-    #     for j in range(0, size):
-    #         tmp.append(spectrum[i][j])
-    #     out.append(tmp)
-    # return list(np.concatenate(out).flat)
-
-
-    # cv2.cartToPolar(contours_x, contours_y)
-    # dists = calculate_dists(contour, [x, y])
-    # downsampled_y, downsampled_x = scale_dists_length(dists, length)
-
-    # return downsampled_y, downsampled_x
-    cv2.waitKey()
-
 def unl(img):
     contour = object_contour(img)
-    # breakpoint()
     x, y = center_of_contour(img, contour)
-    dists = calculate_dists(contour, [x, y])
-    dists = dists/np.max(dists)  # normalization
-    theta = np.arctan2(contour[:, 0, 1]-y, contour[:, 0, 0]-x)
-    plt.plot(theta, dists)
-    plt.show()
-    print("theta")
-    print(theta)
-    print("dists")
-    print(dists)
+    (x, y), radius = cv2.minEnclosingCircle(contour)
+    polar_image = cv2.linearPolar(
+        img, center=(x, y), maxRadius=radius, flags=cv2.WARP_POLAR_LINEAR
+    )
+    polar_image = polar_image.astype(np.uint8)
+    scaled_polar_image = cv2.resize(polar_image, (128, 128), interpolation=cv2.INTER_LINEAR)
+    result = cv2.rotate(scaled_polar_image, cv2.cv2.ROTATE_90_COUNTERCLOCKWISE) 
+    return result 
 
+
+def unl_fourier(img, size):
+    polar_image = unl(img)
+
+    img_fft = np.fft.fft2(polar_image)
+    spectrum = np.log(1 + np.abs(img_fft))
+
+    result = list(spectrum[:size, :size].flat)
+    return result
 
 
 def main():
     X_train, y_train, X_test, y_test = prepare_dataset()
     name = 3
     file = f"./dataset/tests/{name}.png"
-    # file = X_train[8]
+    file = X_train[8]
 
     img = cv2.imread(file, cv2.IMREAD_GRAYSCALE).astype("uint8")
-    cv2.imshow("Original image", img)
-    unl(img)
+    unl_fourier(img, 4)
+
+    for i in range(20):
+        img = cv2.imread(X_train[i], cv2.IMREAD_GRAYSCALE).astype("uint8")
+        cv2.imshow("Original image", img)
+        cv2.imshow("UNL", unl(img))
+        cv2.waitKey(0)
 
 
 if __name__ == "__main__":
