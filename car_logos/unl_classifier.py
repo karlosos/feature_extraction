@@ -90,4 +90,4 @@ def experiment_30():
 
 if __name__ == "__main__":
     main()
-    # experiment_30()
+    experiment_30()
