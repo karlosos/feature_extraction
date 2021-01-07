@@ -6,12 +6,25 @@ from simple_shape_descriptors import object_contour, prepare_dataset
 from signature import center_of_contour, calculate_dists
 
 
-def unl(img):
+def unl_with_whole(img):
     contour = object_contour(img)
     x, y = center_of_contour(img, contour)
     (x, y), radius = cv2.minEnclosingCircle(contour)
     polar_image = cv2.linearPolar(
         img, center=(x, y), maxRadius=radius, flags=cv2.WARP_POLAR_LINEAR
+    )
+    polar_image = polar_image.astype(np.uint8)
+    scaled_polar_image = cv2.resize(polar_image, (128, 128), interpolation=cv2.INTER_LINEAR)
+    result = cv2.rotate(scaled_polar_image, cv2.cv2.ROTATE_90_COUNTERCLOCKWISE) 
+    return result 
+
+def unl(img):
+    contour = object_contour(img)
+    thresh = cv2.Canny(img, 30, 200)
+    x, y = center_of_contour(img, contour)
+    (x, y), radius = cv2.minEnclosingCircle(contour)
+    polar_image = cv2.linearPolar(
+        thresh, center=(x, y), maxRadius=radius, flags=cv2.WARP_POLAR_LINEAR
     )
     polar_image = polar_image.astype(np.uint8)
     scaled_polar_image = cv2.resize(polar_image, (128, 128), interpolation=cv2.INTER_LINEAR)
@@ -38,11 +51,15 @@ def main():
     img = cv2.imread(file, cv2.IMREAD_GRAYSCALE).astype("uint8")
     unl_fourier(img, 4)
 
-    for i in range(20):
-        img = cv2.imread(X_train[i], cv2.IMREAD_GRAYSCALE).astype("uint8")
-        cv2.imshow("Original image", img)
-        cv2.imshow("UNL", unl(img))
-        cv2.waitKey(0)
+    cv2.imshow("Original image", img)
+    cv2.imshow("UNL", unl(img))
+    cv2.waitKey(0)
+
+    # for i in range(20):
+    #     img = cv2.imread(X_train[i], cv2.IMREAD_GRAYSCALE).astype("uint8")
+    #     cv2.imshow("Original image", img)
+    #     cv2.imshow("UNL", unl(img))
+    #     cv2.waitKey(0)
 
 
 if __name__ == "__main__":
