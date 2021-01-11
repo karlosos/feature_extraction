@@ -6,7 +6,7 @@ from simple_shape_descriptors import object_contour, prepare_dataset
 from signature import center_of_contour, calculate_dists
 
 
-def unl_with_whole(img):
+def unl_whole(img):
     contour = object_contour(img)
     x, y = center_of_contour(img, contour)
     (x, y), radius = cv2.minEnclosingCircle(contour)
@@ -32,8 +32,11 @@ def unl(img):
     return result 
 
 
-def unl_fourier(img, size):
-    polar_image = unl(img)
+def unl_fourier(img, size, whole=False):
+    if whole:
+        polar_image = unl_whole(img)
+    else:
+        polar_image = unl(img)
 
     img_fft = np.fft.fft2(polar_image)
     spectrum = np.log(1 + np.abs(img_fft))

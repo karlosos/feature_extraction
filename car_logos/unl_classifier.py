@@ -21,7 +21,7 @@ class UNLFClassifier(BaseEstimator, ClassifierMixin):
 
         for i in range(len(X)):
             im = cv2.imread(X[i], cv2.IMREAD_GRAYSCALE).astype("uint8")
-            unlf_desc = unl_fourier(im, self.size)
+            unlf_desc = unl_fourier(im, self.size, whole=False)
             unlf_descriptors.append(unlf_desc)
             labels.append(y[i])
 
@@ -35,7 +35,7 @@ class UNLFClassifier(BaseEstimator, ClassifierMixin):
         for i in range(len(X)):
             x = X[i]
             im = cv2.imread(x, cv2.IMREAD_GRAYSCALE).astype("uint8")
-            descriptors = unl_fourier(im, self.size)
+            descriptors = unl_fourier(im, self.size, whole=False)
             y_pred.append(self.closest_template(descriptors))
         return y_pred
 
@@ -68,7 +68,7 @@ def experiment_30():
     from simple_shape_descriptors import prepare_dataset
 
     X_train, y_train, X_test, y_test = prepare_dataset()
-    size = 30
+    size = 5
 
     clf = UNLFClassifier(size=size)
     clf.fit(X_train, y_train)

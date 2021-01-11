@@ -52,6 +52,8 @@ def color_hist(filename):
     hist = np.ravel(blue).tolist() + np.ravel(green).tolist() + np.ravel(red).tolist()
     return hist
 
+def color_layout_desc(filename):
+    pass
 
 def main():
     file = "./dataset/tests/1.jpg"
