@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import scipy.ndimage as ndimage
 from sklearn.cluster import KMeans
+import pywt
 
 
 def dominant_color_desc(filename):
@@ -121,6 +122,16 @@ def color_layout_desc(filename, rows=4, cols=4):
         flip = not flip
     res = np.concatenate(
         [np.concatenate(dct_y_zigzag), np.concatenate(dct_cb_zigzag), np.concatenate(dct_cr_zigzag)])
+    return res
+
+
+def scalable_color_desc(filename):
+    image = cv2.imread(filename)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hist = cv2.calcHist([image], [0], None, [256], [1, 256])
+    coeffs = pywt.dwt(hist, 'haar')
+    (cA, cD) = coeffs
+    res = list(np.concatenate(cA).flat)
     return res
 
 

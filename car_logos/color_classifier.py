@@ -86,6 +86,7 @@ def main():
     from color_descriptors import color_mean_desc
     from color_descriptors import color_hist_rgb_desc
     from color_descriptors import color_hist_hsv_desc
+    from color_descriptors import scalable_color_desc 
 
     from sklearn.metrics import accuracy_score
     import pandas as pd
@@ -94,6 +95,7 @@ def main():
     descriptors = [
         # dominant_color_desc,
         dominant_color_2_desc,
+        scalable_color_desc,
         color_layout_desc,
         color_mean_desc,
         color_hist_rgb_desc,
