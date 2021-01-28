@@ -58,7 +58,7 @@ def main():
 
     console = Console()
 
-    sizes = [10]
+    sizes = [8, 16, 32, 64, 96, 128, 256]
     data = {"size": [], "acc": []}
 
     X_train, y_train, X_test, y_test = prepare_dataset()
